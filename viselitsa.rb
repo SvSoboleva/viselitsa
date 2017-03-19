@@ -16,8 +16,7 @@ require_relative "./lib/game.rb"
 require_relative "./lib/result_printer.rb"
 require_relative "./lib/word_reader.rb"
 
-# объект, печатающий результаты
-printer = ResultPrinter.new(current_path)
+VERSION = 'Игра Виселица версия 4'
 
 # объект, отвечающий за ввод слова в игру
 word_reader = WordReader.new
@@ -28,7 +27,10 @@ words_file_name = current_path + "/data/words.txt"
 # создаем объект типа Game, в конструкторе передаем загаданное слово из word_reader-а
 game = Game.new(word_reader.read_from_file(words_file_name))
 
-while game.status == 0 do
+# объект, печатающий результаты
+printer = ResultPrinter.new(game)
+
+while game.in_progress? do
   # выводим статус игры
   printer.print_status(game)
   # просим угадать следующую букву

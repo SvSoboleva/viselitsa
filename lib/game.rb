@@ -4,6 +4,8 @@
 
 class Game
   attr_reader :status, :errors, :good_letters, :bad_letters, :letters
+  attr_accessor :version
+  MAX_ERRORS = 7
 
   def initialize(slovo)
     @letters = get_letters(slovo)
@@ -16,7 +18,11 @@ class Game
     @bad_letters = []
 
     # спец. поле индикатор состояния игры (см. метод get_status)
-    @status = 0
+    @status = :in_progress # :won , :lost
+  end
+
+  def errors_left
+    MAX_ERRORS - @errors
   end
 
   # Метод, который возвращает массив букв загаданного слова
@@ -29,44 +35,65 @@ class Game
     return slovo.split("")
   end
 
-  # Основной метод игры "сделать следующий шаг"
-  def next_step(bukva)
-    if @status == -1 || @status == 1
-      return # выходим из метода возвращая пустое значение
-    end
+  def is_good?(letter)
+    @letters.include?(letter) ||
+    (letter == "е" && letters.include?("ё")) ||
+    (letter == "ё" && letters.include?("е")) ||
+    (letter == "и" && letters.include?("й")) ||
+    (letter == "й" && letters.include?("и"))
+  end
 
-    # если введенная буква уже есть в списке "правильных" или "ошибочных" букв,
-    # то ничего не изменилось, выходим из метода
-    if @good_letters.include?(bukva) || @bad_letters.include?(bukva)
-      return
+  def add_letter_to(letters, letter)
+    letters << letter # запишем её в число "правильных" буква
+
+    case letter
+    when 'е' then letters << 'ё'
+    when 'ё' then letters << 'е'
+    when 'и' then letters << 'й'
+    when 'й' then letters << 'и'
     end
+  end
+
+  def solved?
+    (@letters - @good_letters).empty?
+  end
+
+  def repeated?(letter)
+    @good_letters.include?(letter) || @bad_letters.include?(letter)
+  end
+
+  def lost?
+   @status == :lost || @errors >= MAX_ERRORS
+  end
+
+  def in_progress?
+    @status == :in_progress
+  end
+
+  def won?
+    @status == :won
+  end
+
+  def max_errors
+    MAX_ERRORS
+  end
+
+  # Основной метод игры "сделать следующий шаг"
+  def next_step(letter)
+    # выходим из метода возвращая пустое значение
+    return if @status == :lost || @status == :won
+    return if repeated?(letter)
 
     # если в слове есть буква, или буква входит в пары е-ё и и-й , которые будем считать за одну букву
-    if @letters.include?(bukva) ||
-         (bukva == "е" && letters.include?("ё")) ||
-         (bukva == "ё" && letters.include?("е")) ||
-         (bukva == "и" && letters.include?("й")) ||
-         (bukva == "й" && letters.include?("и"))
-
-      @good_letters << bukva # запишем её в число "правильных" буква
-
-      case bukva
-      when 'е' then @good_letters << 'ё'
-      when 'ё' then @good_letters << 'е'
-      when 'и' then @good_letters << 'й'
-      when 'й' then @good_letters << 'и'
-      end
+    if is_good?(letter)
+      add_letter_to(@good_letters, letter)
 
       # дополнительная проверка - угадано ли на этой букве все слово целиком
-      if (@letters - @good_letters).empty?
-        @status = 1 # статус - победа
-      end
+      @status = :won if solved?
     else # если в слове нет введенной буквы – добавляем ошибочную букву и увеличиваем счетчик
-      @bad_letters << bukva
+      add_letter_to(@bad_letters, letter)
       @errors += 1
-      if @errors >= 7 # если ошибок больше 7 - статус игры -1, проигрышь
-        @status = -1
-      end
+      @status = :lost if lost? # если ошибок больше 7 - статус игры -1, проигрышь
     end
   end
 

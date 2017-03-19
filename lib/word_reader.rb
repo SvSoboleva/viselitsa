@@ -13,6 +13,6 @@ class WordReader
       puts "Ошибка доступа к файлу. #{error.message}"
       return nil
     end  
-    return UnicodeUtils.downcase(lines.sample.chomp)
+    UnicodeUtils.downcase(lines.sample.chomp)
   end
 end
