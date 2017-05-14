@@ -1,20 +1,12 @@
 # encoding: utf-8
-if Gem.win_platform?
-  Encoding.default_external = Encoding.find(Encoding.locale_charmap)
-  Encoding.default_internal = __ENCODING__
-
-  [STDIN, STDOUT].each do |io|
-    io.set_encoding(Encoding.default_external, Encoding.default_internal)
-  end
-end
 
 current_path = File.dirname(__FILE__)
 
 require "unicode_utils/downcase"
 
-require_relative "./lib/game.rb"
-require_relative "./lib/result_printer.rb"
-require_relative "./lib/word_reader.rb"
+require_relative "lib/game.rb"
+require_relative "lib/result_printer.rb"
+require_relative "lib/word_reader.rb"
 
 VERSION = 'Игра Виселица версия 4'
 
